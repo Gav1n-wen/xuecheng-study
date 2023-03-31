@@ -21,30 +21,51 @@ public class CourseTeacherServiceImpl implements CourseTeacherService {
     @Autowired
     CourseTeacherMapper courseTeacherMapper;
     @Override
-    public List<AddCourseTeacherDto> getCourseTeacher(long id) {
-        List<AddCourseTeacherDto> courseTeacherDtoList = new ArrayList<>();
+    public List<CourseTeacher> getCourseTeacher(long id) {
         LambdaQueryWrapper<CourseTeacher> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(CourseTeacher::getCourseId, id);
         List<CourseTeacher> courseTeacherList = courseTeacherMapper.selectList(queryWrapper);
 
-        for (CourseTeacher courseTeacher : courseTeacherList) {
-            AddCourseTeacherDto courseTeacherDto = new AddCourseTeacherDto();
-            BeanUtils.copyProperties(courseTeacher, courseTeacherDto);
-            courseTeacherDtoList.add(courseTeacherDto);
-        }
-
-        return courseTeacherDtoList;
+        return courseTeacherList;
     }
 
     @Override
     @Transactional
-    public CourseTeacher saveCourseTeacher(AddCourseTeacherDto courseTeacherDto) {
-        CourseTeacher courseTeacher = new CourseTeacher();
-        BeanUtils.copyProperties(courseTeacherDto, courseTeacher);
+    public CourseTeacher saveCourseTeacher(CourseTeacher courseTeacher) {
         int insert = courseTeacherMapper.insert(courseTeacher);
         if (insert <= 0) {
             XueChengPlusException.cast("添加老师失败");
         }
+        long id = courseTeacher.getId();
+        return courseTeacherMapper.selectById(id);
+    }
+
+    @Override
+    @Transactional
+    public CourseTeacher updateCourseTeacher(Long companyID, CourseTeacher courseTeacher) {
+        long id = courseTeacher.getId();
+        if (courseTeacherMapper.selectById(id) == null) {
+            XueChengPlusException.cast("该老师不存在，更新失败");
+        }
+        if (!companyID.equals(courseTeacherMapper.getCompanyId(id))) {
+            XueChengPlusException.cast("只允许修改本机构老师信息");
+        }
+        int update = courseTeacherMapper.updateById(courseTeacher);
+        if (update <= 0) {
+            XueChengPlusException.cast("老师信息更新失败");
+        }
         return courseTeacher;
+    }
+
+    @Override
+    @Transactional
+    public void deleteCourseTeacher(Long courseId, Long teacherId) {
+        LambdaQueryWrapper<CourseTeacher> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(CourseTeacher::getId, teacherId)
+                    .eq(CourseTeacher::getCourseId, courseId);
+        int delete = courseTeacherMapper.delete(queryWrapper);
+        if (delete <= 0) {
+            XueChengPlusException.cast("抱歉，删除失败");
+        }
     }
 }

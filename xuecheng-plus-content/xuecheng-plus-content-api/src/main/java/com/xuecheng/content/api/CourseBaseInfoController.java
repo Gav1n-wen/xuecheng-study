@@ -55,6 +55,12 @@ public class CourseBaseInfoController {
     @PutMapping("/course")
     public CourseBaseInfoDto modifyCourseBase(@RequestBody @Validated EditCourseDto editCourseDto) {
         Long companyId = 1232141425L;
-        return courseBaseInfoService.updateCourseBase(companyId,editCourseDto);
+        return courseBaseInfoService.updateCourseBase(companyId, editCourseDto);
+    }
+
+    @ApiOperation("根据课程id删除课程相关信息")
+    @DeleteMapping("/course/{id}")
+    public void deleteCourseInfo(@PathVariable long id) {
+        courseBaseInfoService.deleteCourseInfo(id);
     }
 }

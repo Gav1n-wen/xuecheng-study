@@ -18,4 +18,9 @@
         id, course_id, teacher_name, position, introduction, photograph, create_date
     </sql>
 
+    <select id="getCompanyId" parameterType="long" resultType="java.lang.Long">
+        select company_id
+        from course_base
+        where id = (select course_id from course_teacher where id = #{id})
+    </select>
 </mapper>
